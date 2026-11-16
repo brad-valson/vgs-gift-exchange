@@ -169,29 +169,53 @@ async function showRevealScreen() {
         return;
     }
 
-    // 2. Fetch all participant names in this group to use as slot machine decoys
+    // Helper to populate the final match card & wishlists
+    const renderFinalMatch = () => {
+        document.getElementById('giverName').textContent = currentParticipant.name;
+        document.getElementById('recipientName').textContent = `🎅 ${recipient.name}`;
+
+        if (currentGroup.budget) {
+            document.getElementById('budgetDisplay').textContent = `Suggested Gift Budget: ${currentGroup.budget}`;
+        }
+
+        document.getElementById('recipientWishlistLabel').textContent = `${recipient.name}'s Wishlist:`;
+        if (recipient.wishlist && recipient.wishlist.trim() !== '') {
+            document.getElementById('recipientWishlist').textContent = recipient.wishlist;
+        }
+
+        document.getElementById('myWishlist').value = currentParticipant.wishlist || '';
+        document.getElementById('slotRevealContainer').style.display = 'none';
+        document.getElementById('finalMatchCard').style.display = 'block';
+    };
+
+    // 2. Check if this participant already spun on a previous visit
+    const spinStorageKey = `vgs_spun_${secretToken}`;
+    if (localStorage.getItem(spinStorageKey) === 'true') {
+        renderFinalMatch();
+        revealSection.style.display = 'block';
+        return;
+    }
+
+    // 3. Otherwise, build the slot machine reel for their first reveal
     const { data: allGroupParticipants } = await supabaseClient
         .from('participants')
         .select('name')
         .eq('group_id', currentGroup.id);
 
-    // Prepare decoy list + winner
     let namesPool = allGroupParticipants ? allGroupParticipants.map(p => p.name) : [recipient.name];
     if (namesPool.length < 5) {
-        // Pad the reel if the group is small so the spin effect looks substantial
         namesPool = [...namesPool, '🎄 Secret Santa', '🎅 Mystery Gift', '⭐ Festive Surprise', '🎁 Holiday Cheer'];
     }
 
-    // Build slot reel items (repeat pool 4 times to allow a long smooth scroll)
     const reel = document.getElementById('slotReel');
     reel.innerHTML = '';
-    
+
+    // Start with "Spin Now" in the resting slot window, followed by loops, ending on the recipient
+    let fullReelNames = ['🎰 Spin Now'];
     const totalLoops = 4;
-    let fullReelNames = [];
     for (let i = 0; i < totalLoops; i++) {
         fullReelNames = fullReelNames.concat(namesPool);
     }
-    // Ensure the exact recipient lands dead-center on the final stop
     fullReelNames.push(recipient.name);
 
     fullReelNames.forEach(name => {
@@ -203,38 +227,21 @@ async function showRevealScreen() {
 
     revealSection.style.display = 'block';
 
-    // 3. Handle the Spin button click
+    // 4. Handle the Spin button click
     const spinBtn = document.getElementById('spinBtn');
     spinBtn.onclick = () => {
         spinBtn.disabled = true;
         spinBtn.textContent = 'Spinning... 🎰';
 
-        // Calculate offset: each item is 90px tall. Land on the very last item (the recipient).
         const itemHeight = 90;
         const targetIndex = fullReelNames.length - 1;
         const targetOffset = -(targetIndex * itemHeight);
 
         reel.style.transform = `translateY(${targetOffset}px)`;
 
-        // After 3 seconds (matching the CSS transition duration), reveal the final card
         setTimeout(() => {
-            document.getElementById('slotRevealContainer').style.display = 'none';
-            
-            // Populate final match card
-            document.getElementById('giverName').textContent = currentParticipant.name;
-            document.getElementById('recipientName').textContent = `🎅 ${recipient.name}`;
-            
-            if (currentGroup.budget) {
-                document.getElementById('budgetDisplay').textContent = `Suggested Gift Budget: ${currentGroup.budget}`;
-            }
-
-            document.getElementById('recipientWishlistLabel').textContent = `${recipient.name}'s Wishlist:`;
-            if (recipient.wishlist && recipient.wishlist.trim() !== '') {
-                document.getElementById('recipientWishlist').textContent = recipient.wishlist;
-            }
-
-            document.getElementById('myWishlist').value = currentParticipant.wishlist || '';
-            document.getElementById('finalMatchCard').style.display = 'block';
+            localStorage.setItem(spinStorageKey, 'true');
+            renderFinalMatch();
         }, 3100);
     };
 }
