@@ -157,10 +157,10 @@ document.getElementById('verifyCodeBtn').addEventListener('click', async () => {
 });
 
 async function showRevealScreen() {
-    // Fetch the matched recipient's name and wishlist
+    // 1. Fetch the matched recipient's details
     const { data: recipient, error } = await supabaseClient
         .from('participants')
-        .select('name, wishlist')
+        .select('id, name, wishlist')
         .eq('id', currentParticipant.recipient_id)
         .single();
 
@@ -169,20 +169,74 @@ async function showRevealScreen() {
         return;
     }
 
-    document.getElementById('giverName').textContent = currentParticipant.name;
-    document.getElementById('recipientName').textContent = `🎅 ${recipient.name}`;
+    // 2. Fetch all participant names in this group to use as slot machine decoys
+    const { data: allGroupParticipants } = await supabaseClient
+        .from('participants')
+        .select('name')
+        .eq('group_id', currentGroup.id);
+
+    // Prepare decoy list + winner
+    let namesPool = allGroupParticipants ? allGroupParticipants.map(p => p.name) : [recipient.name];
+    if (namesPool.length < 5) {
+        // Pad the reel if the group is small so the spin effect looks substantial
+        namesPool = [...namesPool, '🎄 Secret Santa', '🎅 Mystery Gift', '⭐ Festive Surprise', '🎁 Holiday Cheer'];
+    }
+
+    // Build slot reel items (repeat pool 4 times to allow a long smooth scroll)
+    const reel = document.getElementById('slotReel');
+    reel.innerHTML = '';
     
-    if (currentGroup.budget) {
-        document.getElementById('budgetDisplay').textContent = `Suggested Gift Budget: ${currentGroup.budget}`;
+    const totalLoops = 4;
+    let fullReelNames = [];
+    for (let i = 0; i < totalLoops; i++) {
+        fullReelNames = fullReelNames.concat(namesPool);
     }
+    // Ensure the exact recipient lands dead-center on the final stop
+    fullReelNames.push(recipient.name);
 
-    document.getElementById('recipientWishlistLabel').textContent = `${recipient.name}'s Wishlist:`;
-    if (recipient.wishlist && recipient.wishlist.trim() !== '') {
-        document.getElementById('recipientWishlist').textContent = recipient.wishlist;
-    }
+    fullReelNames.forEach(name => {
+        const item = document.createElement('div');
+        item.className = 'slot-item';
+        item.textContent = name;
+        reel.appendChild(item);
+    });
 
-    document.getElementById('myWishlist').value = currentParticipant.wishlist || '';
     revealSection.style.display = 'block';
+
+    // 3. Handle the Spin button click
+    const spinBtn = document.getElementById('spinBtn');
+    spinBtn.onclick = () => {
+        spinBtn.disabled = true;
+        spinBtn.textContent = 'Spinning... 🎰';
+
+        // Calculate offset: each item is 90px tall. Land on the very last item (the recipient).
+        const itemHeight = 90;
+        const targetIndex = fullReelNames.length - 1;
+        const targetOffset = -(targetIndex * itemHeight);
+
+        reel.style.transform = `translateY(${targetOffset}px)`;
+
+        // After 3 seconds (matching the CSS transition duration), reveal the final card
+        setTimeout(() => {
+            document.getElementById('slotRevealContainer').style.display = 'none';
+            
+            // Populate final match card
+            document.getElementById('giverName').textContent = currentParticipant.name;
+            document.getElementById('recipientName').textContent = `🎅 ${recipient.name}`;
+            
+            if (currentGroup.budget) {
+                document.getElementById('budgetDisplay').textContent = `Suggested Gift Budget: ${currentGroup.budget}`;
+            }
+
+            document.getElementById('recipientWishlistLabel').textContent = `${recipient.name}'s Wishlist:`;
+            if (recipient.wishlist && recipient.wishlist.trim() !== '') {
+                document.getElementById('recipientWishlist').textContent = recipient.wishlist;
+            }
+
+            document.getElementById('myWishlist').value = currentParticipant.wishlist || '';
+            document.getElementById('finalMatchCard').style.display = 'block';
+        }, 3100);
+    };
 }
 
 // Save participant's own wishlist

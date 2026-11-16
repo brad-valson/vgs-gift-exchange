@@ -39,8 +39,31 @@
             </div>
         </div>
 
-        <!-- Step 2: Match Reveal & Wishlist Management -->
+        <!-- Step 2: Match Reveal & Wishlist Management -->        
         <div id="revealSection" style="display: none;">
+
+            <div id="revealSection" style="display: none;">
+                <!-- Slot Machine Suspense Box -->
+                <div id="slotRevealContainer" class="slot-container">
+                    <h3>🎁 Ready to find out who you got?</h3>
+                    <div class="slot-machine">
+                        <div id="slotReel" class="slot-reel">
+                            <!-- Dynamically populated spinning names -->
+                        </div>
+                    </div>
+                    <button id="spinBtn" class="spin-btn">🎲 Spin to Reveal My Match!</button>
+                </div>
+
+                <!-- Actual Match Details (Hidden until spin finishes) -->
+                <div id="finalMatchCard" style="display: none;">
+                    <div class="welcome-box">
+                        <p>Welcome, <span id="giverName"></span>! You are buying a gift for:</p>
+                        <h2 id="recipientName"></h2>
+                    </div>
+                    <!-- Wishlist boxes below -->
+                </div>
+            </div>
+            
             <div style="background: #e8f5e9; border: 1px solid #c8e6c9; padding: 24px; border-radius: 10px; text-align: center; margin-bottom: 25px;">
                 <p style="font-size: 0.95rem; color: #2e7d32; margin-bottom: 6px;">
                     Welcome, <strong id="giverName"></strong>! You are buying a gift for:
