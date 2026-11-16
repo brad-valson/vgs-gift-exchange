@@ -45,9 +45,13 @@ async function initDrawPage() {
 
         groupHeader.textContent = `${group.name}${group.budget ? ' • Budget: ' + group.budget : ''}`;
 
-        // 3. Check if email is already verified
-        if (participant.email_verified) {
-            await showRevealScreen();
+        // 3. Check if already verified in DB OR authenticated via Magic Link redirect
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        const isMagicLinkVerified = session && session.user &&
+            session.user.email.toLowerCase() === participant.email.toLowerCase();
+
+        if (participant.email_verified || isMagicLinkVerified) {
+            await completeVerification();
         } else {
             showVerificationScreen();
         }
@@ -58,16 +62,49 @@ async function initDrawPage() {
     }
 }
 
+// Marks participant verified in Supabase DB and transitions to the reveal screen
+async function completeVerification() {
+    if (!currentParticipant.email_verified) {
+        await supabaseClient
+            .from('participants')
+            .update({ email_verified: true })
+            .eq('id', currentParticipant.id);
+
+        currentParticipant.email_verified = true;
+    }
+
+    // Clean up the #access_token hash from the URL bar if present
+    if (window.location.hash) {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+
+    verifySection.style.display = 'none';
+    await showRevealScreen();
+}
+
+// Catch Magic Link sign-in events if Supabase finishes parsing the URL hash after initDrawPage runs
+supabaseClient.auth.onAuthStateChange(async (event, session) => {
+    if (
+        (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') &&
+        session &&
+        currentParticipant &&
+        !currentParticipant.email_verified &&
+        session.user.email.toLowerCase() === currentParticipant.email.toLowerCase()
+    ) {
+        await completeVerification();
+    }
+});
+
 function showVerificationScreen() {
     document.getElementById('verifyParticipantName').textContent = currentParticipant.name;
     document.getElementById('verifyParticipantEmail').textContent = currentParticipant.email;
     verifySection.style.display = 'block';
 }
 
-// Send 6-digit OTP via Supabase Auth
+// Send Magic Link / OTP via Supabase Auth
 document.getElementById('sendCodeBtn').addEventListener('click', async () => {
     const sendBtn = document.getElementById('sendCodeBtn');
-    sendBtn.textContent = 'Sending code...';
+    sendBtn.textContent = 'Sending verification email...';
     sendBtn.disabled = true;
 
     const { error } = await supabaseClient.auth.signInWithOtp({
@@ -80,17 +117,17 @@ document.getElementById('sendCodeBtn').addEventListener('click', async () => {
 
     if (error) {
         alert('Error sending verification email: ' + error.message);
-        sendBtn.textContent = '📧 Send 6-Digit Verification Code';
+        sendBtn.textContent = '📧 Send Verification Email';
         sendBtn.disabled = false;
     } else {
-        alert(`A 6-digit verification code has been sent to ${currentParticipant.email}. Check your inbox (and spam folder)!`);
-        sendBtn.textContent = 'Resend Verification Code';
+        alert(`A verification link has been sent to ${currentParticipant.email}. Click "Sign in" in your email to reveal your match!`);
+        sendBtn.textContent = 'Resend Verification Email';
         sendBtn.disabled = false;
         document.getElementById('otpInputGroup').style.display = 'block';
     }
 });
 
-// Verify 6-digit OTP
+// Verify 6-digit OTP (kept as fallback if a code is entered manually)
 document.getElementById('verifyCodeBtn').addEventListener('click', async () => {
     const otpCode = document.getElementById('otpCode').value.trim();
     const verifyBtn = document.getElementById('verifyCodeBtn');
@@ -116,15 +153,7 @@ document.getElementById('verifyCodeBtn').addEventListener('click', async () => {
         return;
     }
 
-    // Mark participant as verified in database so future visits open immediately
-    await supabaseClient
-        .from('participants')
-        .update({ email_verified: true })
-        .eq('id', currentParticipant.id);
-
-    currentParticipant.email_verified = true;
-    verifySection.style.display = 'none';
-    await showRevealScreen();
+    await completeVerification();
 });
 
 async function showRevealScreen() {
