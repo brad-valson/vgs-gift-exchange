@@ -73,7 +73,8 @@ document.getElementById('sendCodeBtn').addEventListener('click', async () => {
     const { error } = await supabaseClient.auth.signInWithOtp({
         email: currentParticipant.email,
         options: {
-            shouldCreateUser: true
+            shouldCreateUser: true,
+            emailRedirectTo: window.location.href
         }
     });
 
