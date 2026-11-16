@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The VGS Gift Exchange - Secret Santa Generator</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Supabase JS Client CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🎄 The VGS Gift Exchange</h1>
+        <p class="subtitle">Create your Secret Santa group, set gift limits, and generate private draw links.</p>
+
+        <form id="groupForm">
+            <div class="form-group">
+                <label for="groupName">Exchange Name / Occasion</label>
+                <input type="text" id="groupName" placeholder="e.g., VGS Family Christmas 2026" required>
+            </div>
+
+            <div class="form-group">
+                <label for="organizerEmail">Your Email (Organizer)</label>
+                <input type="email" id="organizerEmail" placeholder="you@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="budget">Suggested Budget (Optional)</label>
+                <input type="text" id="budget" placeholder="e.g., R300 or $20">
+            </div>
+
+            <hr style="margin: 25px 0; border: 0; border-top: 1px solid var(--border-color);">
+
+            <h3>Participants (Add at least 3 people)</h3>
+            <p style="font-size: 0.85rem; color: #6c757d; margin-bottom: 15px;">
+                Enter each participant's name and email. Optional: Enter a name they <em>cannot</em> draw (e.g. their partner).
+            </p>
+
+            <div id="participantsList">
+                <!-- Rows injected via JS -->
+            </div>
+
+            <button type="button" id="addRowBtn" class="btn btn-secondary">+ Add Another Participant</button>
+            
+            <div style="margin-top: 30px;">
+                <button type="submit" id="submitBtn" class="btn">🚀 Run Secret Santa & Generate Links</button>
+            </div>
+        </form>
+
+        <div id="resultSection" style="display: none;"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/supabase.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Secret Draw - The VGS Gift Exchange</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Supabase JS Client CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🎁 The VGS Gift Exchange</h1>
+        <p id="groupHeader" class="subtitle">Loading your gift exchange details...</p>
+
+        <!-- Error / Invalid Token State -->
+        <div id="errorBox" style="display: none; text-align: center; color: var(--accent); padding: 20px;">
+            <h3>Invalid or Missing Secret Link</h3>
+            <p style="margin-top: 8px; color: #555;">Please double-check the exact link sent to you by the organizer.</p>
+        </div>
+
+        <!-- Step 1: Email Verification Gate -->
+        <div id="verifySection" style="display: none;">
+            <div style="background: #fff3cd; border: 1px solid #ffeeba; padding: 18px; border-radius: 8px; margin-bottom: 20px;">
+                <h3 style="color: #856404; margin-bottom: 6px;">🔒 Verify Your Email to Peek</h3>
+                <p style="font-size: 0.92rem; color: #555;">
+                    Hi <strong id="verifyParticipantName"></strong>! To keep draws private, we need to verify that you own <strong id="verifyParticipantEmail"></strong>.
+                </p>
+            </div>
+
+            <button type="button" id="sendCodeBtn" class="btn">📧 Send 6-Digit Verification Code</button>
+
+            <div id="otpInputGroup" style="display: none; margin-top: 20px;">
+                <div class="form-group">
+                    <label for="otpCode">Enter the 6-digit code sent to your email:</label>
+                    <input type="text" id="otpCode" placeholder="e.g., 123456" maxlength="6" style="letter-spacing: 4px; font-size: 1.2rem; text-align: center;">
+                </div>
+                <button type="button" id="verifyCodeBtn" class="btn">✅ Verify & Reveal My Match</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Match Reveal & Wishlist Management -->
+        <div id="revealSection" style="display: none;">
+            <div style="background: #e8f5e9; border: 1px solid #c8e6c9; padding: 24px; border-radius: 10px; text-align: center; margin-bottom: 25px;">
+                <p style="font-size: 0.95rem; color: #2e7d32; margin-bottom: 6px;">
+                    Welcome, <strong id="giverName"></strong>! You are buying a gift for:
+                </p>
+                <h2 id="recipientName" style="font-size: 2rem; color: var(--primary-dark); margin: 10px 0;"></h2>
+                <p id="budgetDisplay" style="font-size: 0.9rem; color: #555;"></p>
+            </div>
+
+            <!-- Recipient's Wishlist -->
+            <div class="form-group" style="background: #f8f9fa; padding: 18px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <label id="recipientWishlistLabel">Their Wishlist:</label>
+                <p id="recipientWishlist" style="white-space: pre-wrap; color: #333; margin-top: 8px; font-size: 0.95rem;">
+                    They haven't added any gift ideas yet—check back later!
+                </p>
+            </div>
+
+            <hr style="margin: 25px 0; border: 0; border-top: 1px solid var(--border-color);">
+
+            <!-- User's Own Wishlist -->
+            <div class="form-group">
+                <label for="myWishlist">Your Own Wishlist (so your Secret Santa knows what to get you):</label>
+                <textarea id="myWishlist" rows="4" placeholder="Add gift ideas, sizes, favorite colors, or links here..."></textarea>
+                <button type="button" id="saveWishlistBtn" class="btn" style="margin-top: 12px;">💾 Save My Wishlist</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/supabase.js"></script>
+    <script src="js/draw.js"></script>
+</body>
+</html>
