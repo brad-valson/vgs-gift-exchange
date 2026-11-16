@@ -39,31 +39,50 @@
             </div>
         </div>
 
-        <!-- Step 2: Match Reveal & Wishlist Management -->        
-        <div id="revealSection" style="display: none;">
-
-            <div id="revealSection" style="display: none;">
-                <!-- Slot Machine Suspense Box -->
-                <div id="slotRevealContainer" class="slot-container">
-                    <h3>🎁 Ready to find out who you got?</h3>
-                    <div class="slot-machine">
-                        <div id="slotReel" class="slot-reel">
-                            <!-- Dynamically populated spinning names -->
-                        </div>
-                    </div>
-                    <button id="spinBtn" class="spin-btn">🎲 Spin to Reveal My Match!</button>
-                </div>
-
-                <!-- Actual Match Details (Hidden until spin finishes) -->
-                <div id="finalMatchCard" style="display: none;">
-                    <div class="welcome-box">
-                        <p>Welcome, <span id="giverName"></span>! You are buying a gift for:</p>
-                        <h2 id="recipientName"></h2>
-                    </div>
-                    <!-- Wishlist boxes below -->
-                </div>
+       <!-- Step 2: Match Reveal & Wishlist Management -->
+<div id="revealSection" style="display: none;">
+    
+    <!-- Slot Machine Suspense Box (Shown first) -->
+    <div id="slotRevealContainer" class="slot-container">
+        <h3>🎁 Ready to find out who you got?</h3>
+        <div class="slot-machine">
+            <div id="slotReel" class="slot-reel">
+                <!-- Dynamically populated spinning names -->
             </div>
-            
+        </div>
+        <button id="spinBtn" class="spin-btn">🎲 Spin to Reveal My Match!</button>
+    </div>
+
+    <!-- Actual Match Details (Hidden until spin finishes) -->
+    <div id="finalMatchCard" style="display: none;">
+        <div style="background: #e8f5e9; border: 1px solid #c8e6c9; padding: 24px; border-radius: 10px; text-align: center; margin-bottom: 20px;">
+            <p style="font-size: 0.95rem; color: #2e7d32; margin-bottom: 6px;">
+                Welcome, <strong id="giverName"></strong>! You are buying a gift for:
+            </p>
+            <h2 id="recipientName" style="font-size: 2rem; color: var(--primary-dark); margin: 10px 0;"></h2>
+            <p id="budgetDisplay" style="font-size: 0.9rem; color: #555;"></p>
+        </div>
+    </div>
+
+    <!-- Recipient's Wishlist -->
+    <div class="form-group" style="background: #f8f9fa; padding: 18px; border-radius: 8px; border: 1px solid var(--border-color);">
+        <label id="recipientWishlistLabel">Their Wishlist:</label>
+        <p id="recipientWishlist" style="white-space: pre-wrap; color: #333; margin-top: 8px; font-size: 0.95rem;">
+            They haven't added any gift ideas yet—check back later!
+        </p>
+    </div>
+
+    <hr style="margin: 25px 0; border: 0; border-top: 1px solid var(--border-color);">
+
+    <!-- User's Own Wishlist -->
+    <div class="form-group">
+        <label for="myWishlist">Your Own Wishlist (so your Secret Santa knows what to get you):</label>
+        <textarea id="myWishlist" rows="4" placeholder="Add gift ideas, sizes, favorite colors, or links here..."></textarea>
+        <button type="button" id="saveWishlistBtn" class="btn" style="margin-top: 12px;">💾 Save My Wishlist</button>
+    </div>
+
+</div>
+
             <div style="background: #e8f5e9; border: 1px solid #c8e6c9; padding: 24px; border-radius: 10px; text-align: center; margin-bottom: 25px;">
                 <p style="font-size: 0.95rem; color: #2e7d32; margin-bottom: 6px;">
                     Welcome, <strong id="giverName"></strong>! You are buying a gift for:
