@@ -188,7 +188,9 @@ groupForm.addEventListener('submit', async (e) => {
         }
 
         // 3. Map recipients & update recipient_id
+        const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
         let finalOutputLinks = [];
+
         for (let i = 0; i < insertedParticipants.length; i++) {
             const giver = insertedParticipants[i];
             const matchedRecipientName = recipients[i].name;
@@ -201,7 +203,6 @@ groupForm.addEventListener('submit', async (e) => {
 
             if (updateError) throw updateError;
 
-            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
             const secretLink = `${baseUrl}draw.html?token=${giver.secret_token}`;
 
             finalOutputLinks.push({
@@ -211,11 +212,18 @@ groupForm.addEventListener('submit', async (e) => {
             });
         }
 
-        // 4. Display Success & Links
+        // 4. Display Success, Admin Dashboard Link & Participant Links
+        const adminUrl = `${baseUrl}admin.html?group_id=${groupId}`;
+
         groupForm.style.display = 'none';
         let linksHtml = `
             <div class="links-container">
                 <h2>🎉 Draw Complete!</h2>
+                <div style="background: #e8f5e9; border: 1px solid #c8e6c9; padding: 15px; border-radius: 8px; margin: 15px 0 20px 0; text-align: center;">
+                    <p style="margin-bottom: 8px; font-weight: bold; color: #2e7d32;">📊 Organizer Admin Dashboard:</p>
+                    <a href="${adminUrl}" target="_blank" class="btn" style="display: inline-block; width: auto; text-decoration: none; padding: 8px 16px; font-size: 0.9rem;">Open Live Admin Dashboard ↗</a>
+                    <p style="font-size: 0.75rem; color: #666; margin-top: 6px;">Bookmark this link to check verification stats and wishlist updates anytime!</p>
+                </div>
                 <p style="margin: 10px 0 20px 0; font-size: 0.95rem;">
                     The Secret Santa pairs have been locked in securely. Copy and send each person their private link below:
                 </p>

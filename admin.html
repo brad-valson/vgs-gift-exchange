@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organizer Dashboard - The VGS Gift Exchange</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="container" style="max-width: 850px;">
+        <div style="text-align: center; margin-bottom: 25px;">
+            <h1>🎁 Organizer Dashboard</h1>
+            <h3 id="groupTitle" style="color: var(--primary-dark); margin-top: 5px;">Loading group stats...</h3>
+        </div>
+
+        <!-- Stats Overview Cards -->
+        <div id="statsContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+            <div style="background: #f8f9fa; padding: 18px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center;">
+                <h4 style="color: #666; font-size: 0.9rem;">Total Participants</h4>
+                <p id="statTotal" style="font-size: 1.8rem; font-weight: bold; color: var(--primary-dark); margin-top: 5px;">-</p>
+            </div>
+            <div style="background: #f8f9fa; padding: 18px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center;">
+                <h4 style="color: #666; font-size: 0.9rem;">Verified Emails</h4>
+                <p id="statVerified" style="font-size: 1.8rem; font-weight: bold; color: #2e7d32; margin-top: 5px;">-</p>
+            </div>
+            <div style="background: #f8f9fa; padding: 18px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center;">
+                <h4 style="color: #666; font-size: 0.9rem;">Wishlists Completed</h4>
+                <p id="statWishlists" style="font-size: 1.8rem; font-weight: bold; color: #d4af37; margin-top: 5px;">-</p>
+            </div>
+        </div>
+
+        <!-- Participants Management Table -->
+        <div class="form-group" style="background: #fff; padding: 20px; border-radius: 10px; border: 1px solid var(--border-color);">
+            <h3>👥 Participant Status & Links</h3>
+            <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">
+                Track who has verified their email and copy individual secret links if someone lost theirs.
+            </p>
+            <div id="participantTableContainer">
+                <p>Loading participants...</p>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 25px;">
+            <a href="index.html" class="btn" style="display: inline-block; width: auto; text-decoration: none;">🏠 Create Another Exchange</a>
+        </div>
+    </div>
+
+    <!-- Supabase Client Config -->
+    <script src="js/supabase.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
