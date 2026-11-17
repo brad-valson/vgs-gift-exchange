@@ -1,16 +1,130 @@
 // js/admin.js
 
 const urlParams = new URLSearchParams(window.location.search);
-const groupId = urlParams.get('group_id');
+const urlGroupId = urlParams.get('group_id');
 
-async function initAdminDashboard() {
-    if (!groupId) {
-        document.getElementById('groupTitle').textContent = '❌ Error: No Group ID provided in URL.';
+const authSection = document.getElementById('authSection');
+const dashboardSection = document.getElementById('dashboardSection');
+const logoutBtn = document.getElementById('logoutBtn');
+const groupSelector = document.getElementById('groupSelector');
+const groupSelectorWrapper = document.getElementById('groupSelectorWrapper');
+
+async function initAdminPage() {
+    // 1. If a direct ?group_id= link is used, load that group directly
+    if (urlGroupId) {
+        authSection.style.display = 'none';
+        dashboardSection.style.display = 'block';
+        await loadGroupDashboard(urlGroupId);
         return;
     }
 
+    // 2. Otherwise check if organizer is logged in via Supabase Auth
+    const { data: { session } } = await supabaseClient.auth.getSession();
+
+    if (session && session.user) {
+        await showOrganizerGroups(session.user.email);
+    } else {
+        authSection.style.display = 'block';
+        dashboardSection.style.display = 'none';
+    }
+}
+
+// Sign In with Email + Password
+document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('adminEmail').value.trim();
+    const password = document.getElementById('adminPassword').value;
+    const loginBtn = document.getElementById('loginBtn');
+
+    loginBtn.textContent = 'Signing in...';
+    loginBtn.disabled = true;
+
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+    if (error) {
+        alert('Login failed: ' + error.message);
+        loginBtn.textContent = '🔐 Sign In to Dashboard';
+        loginBtn.disabled = false;
+        return;
+    }
+
+    await showOrganizerGroups(data.user.email);
+});
+
+// First-time Organizer Registration
+document.getElementById('registerBtn').addEventListener('click', async () => {
+    const email = document.getElementById('adminEmail').value.trim();
+    const password = document.getElementById('adminPassword').value;
+
+    if (!email || password.length < 6) {
+        alert('Please enter your Organizer Email and a password (at least 6 characters) first.');
+        return;
+    }
+
+    const regBtn = document.getElementById('registerBtn');
+    regBtn.textContent = 'Creating account...';
+    regBtn.disabled = true;
+
+    const { data, error } = await supabaseClient.auth.signUp({ email, password });
+
+    if (error) {
+        alert('Registration error: ' + error.message);
+    } else if (data.session) {
+        alert('Organizer account created! Loading your dashboard...');
+        await showOrganizerGroups(data.user.email);
+    } else {
+        alert('Account created! Please check your email to confirm your address, then sign in.');
+    }
+
+    regBtn.textContent = '✨ First Time? Create Organizer Password';
+    regBtn.disabled = false;
+});
+
+// Sign Out
+logoutBtn.addEventListener('click', async () => {
+    await supabaseClient.auth.signOut();
+    window.location.href = 'admin.html';
+});
+
+// Fetch all groups created by this organizer_email
+async function showOrganizerGroups(organizerEmail) {
+    authSection.style.display = 'none';
+    dashboardSection.style.display = 'block';
+    logoutBtn.style.display = 'inline-block';
+
+    const { data: groups, error } = await supabaseClient
+        .from('groups')
+        .select('*')
+        .ilike('organizer_email', organizerEmail)
+        .order('created_at', { ascending: false });
+
+    if (error || !groups || groups.length === 0) {
+        document.getElementById('groupTitle').textContent = `No gift exchanges found for ${organizerEmail}`;
+        document.getElementById('participantTableContainer').innerHTML = 
+            '<p>Create a new exchange using this email address to manage it here!</p>';
+        return;
+    }
+
+    // Populate dropdown if organizer has multiple exchanges
+    if (groups.length > 1) {
+        groupSelector.innerHTML = '';
+        groups.forEach(g => {
+            const opt = document.createElement('option');
+            opt.value = g.id;
+            opt.textContent = `${g.name}${g.budget ? ' (Budget: ' + g.budget + ')' : ''}`;
+            groupSelector.appendChild(opt);
+        });
+        groupSelectorWrapper.style.display = 'block';
+        groupSelector.onchange = () => loadGroupDashboard(groupSelector.value);
+    }
+
+    // Load the most recent group first
+    await loadGroupDashboard(groups[0].id);
+}
+
+// Render stats and participant table for a specific group ID
+async function loadGroupDashboard(groupId) {
     try {
-        // 1. Fetch Group Details
         const { data: group, error: gError } = await supabaseClient
             .from('groups')
             .select('*')
@@ -19,9 +133,8 @@ async function initAdminDashboard() {
 
         if (gError || !group) throw new Error('Group not found');
 
-        document.getElementById('groupTitle').textContent = `${group.name} ${group.budget ? '• Budget: ' + group.budget : ''}`;
+        document.getElementById('groupTitle').textContent = `${group.name}${group.budget ? ' • Budget: ' + group.budget : ''}`;
 
-        // 2. Fetch all participants for this group
         const { data: participants, error: pError } = await supabaseClient
             .from('participants')
             .select('*')
@@ -29,7 +142,6 @@ async function initAdminDashboard() {
 
         if (pError) throw pError;
 
-        // 3. Calculate Stats
         const total = participants.length;
         const verifiedCount = participants.filter(p => p.email_verified).length;
         const wishlistCount = participants.filter(p => p.wishlist && p.wishlist.trim() !== '').length;
@@ -38,7 +150,6 @@ async function initAdminDashboard() {
         document.getElementById('statVerified').textContent = `${verifiedCount} / ${total}`;
         document.getElementById('statWishlists').textContent = `${wishlistCount} / ${total}`;
 
-        // 4. Render Table
         const container = document.getElementById('participantTableContainer');
         if (total === 0) {
             container.innerHTML = '<p>No participants found for this group.</p>';
@@ -93,4 +204,4 @@ async function initAdminDashboard() {
     }
 }
 
-initAdminDashboard();
+initAdminPage();

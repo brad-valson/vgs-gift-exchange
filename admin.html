@@ -5,13 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Organizer Dashboard - The VGS Gift Exchange</title>
     <link rel="stylesheet" href="css/styles.css">
-    <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <div class="container" style="max-width: 850px;">
-        <div style="text-align: center; margin-bottom: 25px;">
+    <!-- Top Navigation Bar -->
+    <nav class="top-navbar">
+        <a href="index.html" class="nav-brand">🎁 The VGS Gift Exchange</a>
+        <div id="navActions">
+            <a href="index.html" class="nav-btn">🎄 New Exchange</a>
+            <button id="logoutBtn" class="nav-btn" style="display: none; margin-left: 8px; background: #ffebee; color: #c62828; border-color: #ffcdd2;">Sign Out</button>
+        </div>
+    </nav>
+
+    <!-- STEP 1: Organizer Login / Sign Up Card -->
+    <div id="authSection" class="container" style="max-width: 450px; display: none;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h1>🎅 Organizer Portal</h1>
+            <p style="color: #666; font-size: 0.9rem; margin-top: 6px;">
+                Sign in with the Organizer Email you used when creating your gift exchange.
+            </p>
+        </div>
+
+        <form id="adminLoginForm">
+            <div class="form-group">
+                <label for="adminEmail">Organizer Email</label>
+                <input type="email" id="adminEmail" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+                <label for="adminPassword">Password</label>
+                <input type="password" id="adminPassword" placeholder="••••••••" minlength="6" required>
+            </div>
+            <button type="submit" id="loginBtn" class="btn">🔐 Sign In to Dashboard</button>
+            <button type="button" id="registerBtn" class="btn" style="margin-top: 10px; background: #fff; color: var(--primary-dark); border: 1px solid var(--primary-dark);">
+                ✨ First Time? Create Organizer Password
+            </button>
+        </form>
+    </div>
+
+    <!-- STEP 2: Main Organizer Dashboard -->
+    <div id="dashboardSection" class="container" style="max-width: 850px; display: none;">
+        <div style="text-align: center; margin-bottom: 20px;">
             <h1>🎁 Organizer Dashboard</h1>
+            
+            <!-- Group Switcher (shown if organizer has multiple exchanges) -->
+            <div id="groupSelectorWrapper" style="margin: 12px auto; max-width: 360px; display: none;">
+                <select id="groupSelector" style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-weight: 600;"></select>
+            </div>
+
             <h3 id="groupTitle" style="color: var(--primary-dark); margin-top: 5px;">Loading group stats...</h3>
         </div>
 
@@ -41,13 +81,8 @@
                 <p>Loading participants...</p>
             </div>
         </div>
-
-        <div style="text-align: center; margin-top: 25px;">
-            <a href="index.html" class="btn" style="display: inline-block; width: auto; text-decoration: none;">🏠 Create Another Exchange</a>
-        </div>
     </div>
 
-    <!-- Supabase Client Config -->
     <script src="js/supabase.js"></script>
     <script src="js/admin.js"></script>
 </body>
